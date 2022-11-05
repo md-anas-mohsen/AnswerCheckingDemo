@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Word2Vec results</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+  <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+  <style>
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="form-container">
+      <h1>Word2Vec (with mark scheme array)</h1>
+      <div class="col-10 card card-body m-auto mt-5">
+        <form class="row g-3">
+          <div class="col-12">
+            <label for="inputAddress" class="form-label">Mark Scheme</label>
+            <input name="mark_scheme" type="text" class="form-control" id="markSchemeInput" >
+          </div>
+          <div class="col-12">
+            <label for="inputAddress2" class="form-label">Your Answer </label>
+            <input name="my_answer" type="text" class="form-control" id="myAnswerInput" >
+          </div>
+        
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">Check</button>
+          </div>
+          <div id="minDistance" class="card text-bg-success mb-3 w-100">
+  <div class="card-header hidden">Min Distance</div>
+  <div class="card-body">
+    <h5 id="minDistanceValue" class="card-title">0.00</h5>
+  </div>
+</div>
+          <div id="avgDistance" class="card text-bg-primary mb-3 w-100">
+  <div class="card-header hidden">Avg Distance</div>
+  <div class="card-body">
+    <h5 id="avgDistanceValue" class="card-title">0.00</h5>
+  </div>
+</div>
+          <div id="distances" class="card text-bg-light mb-3 w-100">
+  <div class="card-header hidden">Distances</div>
+  <div class="card-body">
+    <p id="distanceValue" class="card-text"></p>
+  </div>
+</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+  <script>
+  $(document).ready(() => {
+    $("#distances").hide();
+    $("#minDistance").hide();
+    $("#avgDistance").hide();
+  });
+
+  $("form").submit(async (e) => {
+    e.preventDefault();
+    let formData = Object.fromEntries(
+      new FormData(document.querySelector("form")).entries()
+    );
+
+    // formData["mark_scheme"] = JSON.parse($("#markSchemeInput").val())
+    // formData["my_answer"] = $("#myAnswerInput").val()
+    
+    const response = await $.post("/api/word2vec-word-mover-distance-batch", formData);
+    const distances = JSON.parse(response)["distances"];
+    const minDistance = JSON.parse(response)["minDistance"];
+    const avgDistance = JSON.parse(response)["averageDistance"];
+
+    if (distances) {
+        let scores = "";
+        distances.forEach(({markSchemeAnswer, distance}) => scores+=`<span>${markSchemeAnswer}</span> - <span><strong>${distance}</strong></span><br><br>`)
+    $("#distanceValue").html(scores);
+      $("#distances").show();
+    }
+
+    if (minDistance) {
+            $("#minDistanceValue").text(`${minDistance}`);
+      $("#minDistance").show();
+    }
+
+    if (avgDistance) {
+            $("#avgDistanceValue").text(`${avgDistance}`);
+      $("#avgDistance").show();
+    }
+  });
+</script>
+</html>
